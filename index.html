@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>日本国内空港コード・設備一覧</title>
+  <style>
+    body {
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      background-color: #f4f7f6;
+      color: #333;
+      margin: 0;
+      padding: 20px;
+    }
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      background: #fff;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    h1 {
+      text-align: center;
+      color: #2c3e50;
+      margin-bottom: 30px;
+    }
+    .search-box {
+      margin-bottom: 20px;
+      display: flex;
+      gap: 10px;
+    }
+    .search-box input {
+      flex: 1;
+      padding: 12px 15px;
+      border: 2px solid #ddd;
+      border-radius: 4px;
+      font-size: 16px;
+      transition: border-color 0.3s;
+    }
+    .search-box input:focus {
+      border-color: #3498db;
+      outline: none;
+    }
+    .search-box select {
+      padding: 12px 15px;
+      border: 2px solid #ddd;
+      border-radius: 4px;
+      font-size: 16px;
+      background-color: #fff;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    th, td {
+      padding: 12px 15px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+    th {
+      background-color: #34495e;
+      color: #fff;
+      font-weight: bold;
+    }
+    tr:hover {
+      background-color: #f1f2f6;
+    }
+    .badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+    .badge-int {
+      background-color: #e1f5fe;
+      color: #0288d1;
+    }
+    .badge-dom {
+      background-color: #fff3e0;
+      color: #f57c00;
+    }
+    .no-result {
+      text-align: center;
+      padding: 20px;
+      color: #7f8c8d;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>日本の空港コード・仕様一覧システム</h1>
+  
+  <div class="search-box">
+    <input type="text" id="keywordInput" placeholder="空港名、IATA、ICAOコードで検索...">
+    <select id="typeFilter">
+      <option value="">すべての対応路線</option>
+      <option value="国際線・国内線">国際線・国内線</option>
+      <option value="国内線専用">国内線専用</option>
+    </select>
+  </div>
+
+  <table id="airportTable">
+    <thead>
+      <tr>
+        <th>正式日本名</th>
+        <th>IATA</th>
+        <th>ICAO</th>
+        <th>対応路線</th>
+        <th>滑走路本数</th>
+      </tr>
+    </thead>
+    <tbody id="tableBody">
+      </tbody>
+  </table>
+  <div id="noResult" class="no-result" style="display: none;">該当する空港が見つかりません。</div>
+</div>
+
+<script src="data.js"></script>
+<script>
+  // テーブルを描画する関数
+  function renderTable(data) {
+    const tableBody = document.getElementById('tableBody');
+    const noResult = document.getElementById('noResult');
+    tableBody.innerHTML = '';
+
+    if (data.length === 0) {
+      noResult.style.display = 'block';
+      return;
+    }
+    noResult.style.display = 'none';
+
+    data.forEach(airport => {
+      const tr = document.createElement('tr');
+      
+      const badgeClass = airport.type.includes('国際線') ? 'badge-int' : 'badge-dom';
+      
+      tr.innerHTML = `
+        <td><strong>${airport.name}</strong></td>
+        <td>${airport.iata}</td>
+        <td>${airport.icao}</td>
+        <td><span class="badge ${badgeClass}">${airport.type}</span></td>
+        <td>${airport.runways} 本</td>
+      `;
+      tableBody.appendChild(tr);
+    });
+  }
+
+  // 検索・フィルタリング処理
+  function filterData() {
+    const keyword = document.getElementById('keywordInput').value.toLowerCase();
+    const typeValue = document.getElementById('typeFilter').value;
+
+    const filtered = airportData.filter(airport => {
+      const matchesKeyword = 
+        airport.name.toLowerCase().includes(keyword) ||
+        airport.iata.toLowerCase().includes(keyword) ||
+        airport.icao.toLowerCase().includes(keyword);
+        
+      const matchesType = typeValue === "" || airport.type === typeValue;
+
+      return matchesKeyword && matchesType;
+    });
+
+    renderTable(filtered);
+  }
+
+  // イベントリスナーの登録（入力のたびにリアルタイム検索）
+  document.getElementById('keywordInput').addEventListener('input', filterData);
+  document.getElementById('typeFilter').addEventListener('change', filterData);
+
+  // 初期読み込み時の描画
+  window.addEventListener('DOMContentLoaded', () => {
+    renderTable(airportData);
+  });
+</script>
+
+</body>
+</html>
