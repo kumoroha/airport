@@ -74,14 +74,12 @@
       font-size: 12px;
       font-weight: bold;
     }
-    .badge-int {
-      background-color: #e1f5fe;
-      color: #0288d1;
-    }
-    .badge-dom {
-      background-color: #fff3e0;
-      color: #f57c00;
-    }
+    /* バッジカラーのバリエーション設定 */
+    .badge-int { background-color: #e1f5fe; color: #0288d1; }
+    .badge-dom { background-color: #fff3e0; color: #f57c00; }
+    .badge-mil { background-color: #efebe9; color: #4e342e; }
+    .badge-oth { background-color: #e8f5e9; color: #2e7d32; }
+    
     .no-result {
       text-align: center;
       padding: 20px;
@@ -98,9 +96,13 @@
   <div class="search-box">
     <input type="text" id="keywordInput" placeholder="空港名、IATA、ICAOコードで検索...">
     <select id="typeFilter">
-      <option value="">すべての対応路線</option>
+      <option value="">すべての対応路線・種別</option>
       <option value="国際線・国内線">国際線・国内線</option>
       <option value="国内線専用">国内線専用</option>
+      <option value="国内線・軍用">国内線・軍用</option>
+      <option value="軍用専用">軍用専用</option>
+      <option value="米軍専用">米軍専用</option>
+      <option value="一般航空専用">一般航空専用</option>
     </select>
   </div>
 
@@ -110,7 +112,7 @@
         <th>正式日本名</th>
         <th>IATA</th>
         <th>ICAO</th>
-        <th>対応路線</th>
+        <th>対応路線・種別</th>
         <th>滑走路本数</th>
       </tr>
     </thead>
@@ -137,7 +139,15 @@
     data.forEach(airport => {
       const tr = document.createElement('tr');
       
-      const badgeClass = airport.type.includes('国際線') ? 'badge-int' : 'badge-dom';
+      // 種別に応じたバッジクラスの振り分け
+      let badgeClass = 'badge-oth';
+      if (airport.type === '国際線・国内線') {
+        badgeClass = 'badge-int';
+      } else if (airport.type === '国内線専用') {
+        badgeClass = 'badge-dom';
+      } else if (airport.type.includes('軍用') || airport.type.includes('米軍')) {
+        badgeClass = 'badge-mil';
+      }
       
       tr.innerHTML = `
         <td><strong>${airport.name}</strong></td>
